@@ -20,8 +20,12 @@ class FlappyBird():
         self.bird = pygame.transform.scale(self.bird, (20, 20))
         self.birdRect = self.bird.get_rect()
 
-        self.ResetWall()
+        self.ResetGame()
 
+
+    def ResetGame(self):
+        # Reset value for a new game
+        self.ResetWall()
         self.jump = False
         self.birdRect.top = HEIGHT / 2
         self.birdRect.left = 10
@@ -29,7 +33,6 @@ class FlappyBird():
         self.speed = 5
         self.dead = False
         self.score = 0
-
 
     def MoveBird(self):
         # Move the bird for the turn
@@ -81,7 +84,7 @@ class FlappyBird():
                                      FONT_LOCATION)
  
     def EndGame(self):
-        # Draw endgame screen
+        # Draw endgame screen, just adds a white layer above
         s = pygame.Surface(SCREEN_SIZE)
         s.set_alpha(128)
         s.fill((255,255,255))
@@ -92,14 +95,19 @@ class FlappyBird():
         clock = pygame.time.Clock()
         pygame.font.init()
         self.font = pygame.font.SysFont("Arial", 50)
+        self.dead = False
+
         while True:
             clock.tick(60)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
-                if (event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN) and not self.dead:
-                    self.birdRect.top -= 5
-                    self.speed = -8
+                if (event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN):
+                    if not self.dead:
+                        self.birdRect.top -= 10
+                        self.speed = -8
+                    else:
+                        self.ResetGame()
 
             if self.dead:
                 continue
