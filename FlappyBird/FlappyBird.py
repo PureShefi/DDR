@@ -10,11 +10,31 @@ class FlappyBird():
     def __init__(self):
         self.screen = pygame.display.set_mode(SCREEN_SIZE)
         self.background = pygame.image.load("Assets/background.jpg").convert()
+
         self.wallTop = pygame.image.load("Assets/top.png").convert_alpha()
         self.wallBottom = pygame.image.load("Assets/bottom.png").convert_alpha()
 
+        self.bird = pygame.image.load("Assets/bird.png").convert_alpha()
+        self.bird = pygame.transform.scale(self.bird, (100, 100))
+
         self.ResetWall()
-        print self.offset
+
+        self.jump = False
+        self.birdX = 0
+        self.birdY = HEIGHT / 2
+        self.gravity = 0.5
+        self.speed = 5
+
+    def MoveBird(self):
+        # Move the bird for the turn
+        if self.jump:
+            self.birdY -= 5
+            self.jump = False
+
+        self.speed += self.gravity
+        self.birdY += self.speed
+
+        self.screen.blit(self.bird, (self.birdX, self.birdY))
 
     def MoveWall(self):
         # Move the wall for the turn
@@ -28,6 +48,7 @@ class FlappyBird():
         # Get Center of screen + half of the gap + the offset
         bottomLocation = HEIGHT - (HEIGHT / 2) + (GAP / 2) + self.offset
 
+        # Draw the wall
         self.screen.blit(self.wallTop, (self.wallX, topLocation))
         self.screen.blit(self.wallBottom, (self.wallX, bottomLocation))
 
@@ -47,13 +68,15 @@ class FlappyBird():
                 if event.type == pygame.QUIT:
                     sys.exit()
                 if (event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN):
-                    pass
+                    self.jump = True
+                    self.speed = -10
 
 
             self.screen.fill((255, 255, 255))
             self.screen.blit(self.background, (0, 0))
 
             self.MoveWall()
+            self.MoveBird()
             
             pygame.display.update()
 
