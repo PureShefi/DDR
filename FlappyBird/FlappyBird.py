@@ -4,9 +4,17 @@ import random
 
 SCREEN_SIZE = WIDTH, HEIGHT = (474, 725)
 WALL_DIMENSION = WALL_WIDTH, WALL_HEIGHT = (100, 500)
-GAP = 100
+BIRD_DIMENSION = (30, 30)
+GAP = 200
 FONT_SIZE = 50
-FONT_LOCATION = (((WIDTH + FONT_SIZE)/2), 50)
+FONT_LOCATION = (((WIDTH - FONT_SIZE)/2), FONT_SIZE)
+
+# Bird speed goes from top to bottom
+WALL_SPEED = 8
+GRAVITY = 0.5
+BASE_SPEED = 5
+CLICK_NEW_SPEED = -8
+CLICK_JUMP_SIZE = 10
 
 class FlappyBird():
     def __init__(self):
@@ -17,7 +25,7 @@ class FlappyBird():
         self.wallBottom = pygame.image.load("Assets/bottom.png").convert_alpha()
 
         self.bird = pygame.image.load("Assets/bird.png").convert_alpha()
-        self.bird = pygame.transform.scale(self.bird, (20, 20))
+        self.bird = pygame.transform.scale(self.bird, BIRD_DIMENSION)
         self.birdRect = self.bird.get_rect()
 
         self.ResetGame()
@@ -29,15 +37,14 @@ class FlappyBird():
         self.jump = False
         self.birdRect.top = HEIGHT / 2
         self.birdRect.left = 10
-        self.gravity = 0.5
-        self.speed = 5
+        self.speed = BASE_SPEED
         self.dead = False
         self.score = 0
 
     def MoveBird(self):
         # Move the bird for the turn
         # Update new speed and location
-        self.speed += self.gravity
+        self.speed += GRAVITY
         self.birdRect.top += self.speed
 
         # Validate bird height
@@ -53,7 +60,7 @@ class FlappyBird():
 
     def MoveWall(self):
         # Move the wall for the turn
-        self.wallX -= 10
+        self.wallX -= WALL_SPEED
         if self.wallX <= -WALL_WIDTH:
             self.score += 1
             self.ResetWall()
@@ -74,7 +81,7 @@ class FlappyBird():
     def ResetWall(self):
         # Reset the wall to beginning of the screen
         self.wallX = WIDTH
-        self.offset = random.randint(-150, 100)
+        self.offset = random.randint(-200, 200)
 
     def UpdateScore(self):
         # print score counter
@@ -94,7 +101,7 @@ class FlappyBird():
     def Run(self):
         clock = pygame.time.Clock()
         pygame.font.init()
-        self.font = pygame.font.SysFont("Arial", 50)
+        self.font = pygame.font.SysFont("Arial", FONT_SIZE)
         self.dead = False
 
         while True:
@@ -104,8 +111,8 @@ class FlappyBird():
                     sys.exit()
                 if (event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN):
                     if not self.dead:
-                        self.birdRect.top -= 10
-                        self.speed = -8
+                        self.birdRect.top -= CLICK_JUMP_SIZE
+                        self.speed = CLICK_NEW_SPEED
                     else:
                         self.ResetGame()
 
