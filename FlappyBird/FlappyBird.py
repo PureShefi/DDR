@@ -1,7 +1,9 @@
 import pygame
 import sys
 import random
+import socket
 
+SOCKET_TARGET_HOST = ('127.0.0.1', 7891)
 SCREEN_SIZE = WIDTH, HEIGHT = (474, 725)
 WALL_DIMENSION = WALL_WIDTH, WALL_HEIGHT = (100, 500)
 BIRD_DIMENSION = (30, 30)
@@ -27,6 +29,8 @@ class FlappyBird():
         self.bird = pygame.image.load("Assets/bird.png").convert_alpha()
         self.bird = pygame.transform.scale(self.bird, BIRD_DIMENSION)
         self.birdRect = self.bird.get_rect()
+
+        self.space_update_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self.ResetGame()
 
@@ -113,6 +117,7 @@ class FlappyBird():
                     if not self.dead:
                         self.birdRect.top -= CLICK_JUMP_SIZE
                         self.speed = CLICK_NEW_SPEED
+                        self.space_update_socket.sendto('', SOCKET_TARGET_HOST)
                     else:
                         self.ResetGame()
 

@@ -1,4 +1,6 @@
 import Arrow, pygame, random, Defines
+import socket
+import time
 
 ARROW_SHOW_TIME = 0.3 * Defines.FPS
 
@@ -10,8 +12,16 @@ class DDRGame():
         self.screen = screen
         self.targets = DDRGame.GetTargetArrows()
         self.keyPresses = [[0, Arrow.IMAGE]] * len(Arrow.DIRECTIONS)
-        print self.keyPresses
-        
+        self.moves_socket = DDRGame.GetMovesSocket()
+        self.lastArrow = time.time()
+
+    @staticmethod
+    def GetMovesSocket():
+        moves_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        moves_socket.setblocking(0)
+        moves_socket.bind(('127.0.0.1', 7891))
+        return moves_socket
+
     @staticmethod
     def GetTargetArrows():
         arrows = []
@@ -36,8 +46,16 @@ class DDRGame():
             self.screen.blit(arrowDir[0], arrowDir[1])
 
         self.DrawTargets()
-        if random.randint(0, 5) == 5:
-            self.AddRandomArrow()
+        try:
+            self.moves_socket.recvfrom(1514)
+
+            # Disable spamming
+            if self.lastArrow + 0.45 < time.time():
+                self.AddRandomArrow()
+                self.lastArrow = time.time()
+
+        except socket.error:
+            pass
 
     def AddRandomArrow(self):
         self.arrows.append(Arrow.Arrow(random.randint(0, len(Arrow.DIRECTIONS)-1)))
@@ -68,6 +86,10 @@ class DDRGame():
             return Arrow.RIGHT
 
     def CheckIfArrowOnTarget(self, keyDirection):
+        # If the user pressed a key that is not an arrow key, ignore it
+        if keyDirection not in [Arrow.RIGHT, Arrow.LEFT, Arrow.UP, Arrow.DOWN]:
+            return
+
         for arrow in self.arrows:
             if arrow.GetDirection() != keyDirection:
                 continue
