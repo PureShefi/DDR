@@ -5,7 +5,7 @@ import time
 ARROW_SHOW_TIME = 0.3 * Defines.FPS
 
 class DDRGame():
-    __targetLocation = (30, 30 + Arrow.SIZE[0])
+    __targetLocation = (30, 30 + Arrow.SIZE[0] + 30)
 
     def __init__(self, screen):
         self.arrows = []
@@ -99,7 +99,10 @@ class DDRGame():
                 self.keyPresses[keyDirection] = [ARROW_SHOW_TIME, Arrow.IMAGE_SUCCESS]
                 return
 
-        self.FailedDirection(keyDirection)
+        self.FalsePress(keyDirection)
+
+    def FalsePress(self, keyDirection):
+        self.keyPresses[keyDirection] = [ARROW_SHOW_TIME, Arrow.IMAGE_PRESSED]
 
     def FailedDirection(self, keyDirection):
         self.keyPresses[keyDirection] = [ARROW_SHOW_TIME, Arrow.IMAGE_FAIL]

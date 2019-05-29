@@ -14,6 +14,7 @@ SPEED = [0, -3]
 IMAGE = "Assets/Arrow.png"
 IMAGE_SUCCESS = "Assets/Arrow_Success.png"
 IMAGE_FAIL = "Assets/Arrow_Fail.png"
+IMAGE_PRESSED = "Assets/Arrow_Pressed.png"
 BEGGINING = Defines.SCREEN_HEIGHT - SIZE[0]
 
 class Arrow:
