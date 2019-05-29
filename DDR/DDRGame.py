@@ -3,6 +3,7 @@ import socket
 import time
 
 ARROW_SHOW_TIME = 0.3 * Defines.FPS
+REMOTE_HOST = ('127.0.0.1', 7892)
 
 class DDRGame():
     __targetLocation = (30, 30 + Arrow.SIZE[0] + 30)
@@ -13,6 +14,7 @@ class DDRGame():
         self.targets = DDRGame.GetTargetArrows()
         self.keyPresses = [[0, Arrow.IMAGE]] * len(Arrow.DIRECTIONS)
         self.moves_socket = DDRGame.GetMovesSocket()
+        self.score_update_func = DDRGame.GetScoreUpdateFunction()
         self.lastArrow = time.time()
 
     @staticmethod
@@ -21,6 +23,15 @@ class DDRGame():
         moves_socket.setblocking(0)
         moves_socket.bind(('127.0.0.1', 7891))
         return moves_socket
+
+    @staticmethod
+    def GetScoreUpdateFunction():
+        score_update_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        def UpdateScore(correct):
+            score_update_socket.sendto('+' if correct else '-', REMOTE_HOST)
+
+        return UpdateScore
 
     @staticmethod
     def GetTargetArrows():
@@ -41,7 +52,7 @@ class DDRGame():
                 self.FailedDirection(arrow.GetDirection())
                 self.arrows.remove(arrow)
                 continue
-            
+
             # Draw new arrow location
             self.screen.blit(arrowDir[0], arrowDir[1])
 
@@ -97,6 +108,7 @@ class DDRGame():
             if arrow.GetTop() > DDRGame.__targetLocation[0] and arrow.GetTop() < DDRGame.__targetLocation[1]:
                 self.arrows.remove(arrow)
                 self.keyPresses[keyDirection] = [ARROW_SHOW_TIME, Arrow.IMAGE_SUCCESS]
+                self.score_update_func(True)
                 return
 
         self.FalsePress(keyDirection)
@@ -106,3 +118,4 @@ class DDRGame():
 
     def FailedDirection(self, keyDirection):
         self.keyPresses[keyDirection] = [ARROW_SHOW_TIME, Arrow.IMAGE_FAIL]
+        self.score_update_func(False)
