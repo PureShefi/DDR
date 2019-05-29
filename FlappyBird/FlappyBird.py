@@ -35,10 +35,10 @@ class InputBox:
         self.hint_surface = FONT.render("Submit name:", True, self.color)
 
     def handle_event(self, event):
-        enterPressed = ""
+        enterPressed = None
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
-                enterPressed = self.text
+                enterPressed = self.text.strip()
                 print(self.text)
             elif event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
@@ -81,9 +81,11 @@ class FlappyBird():
         self.score_updates_socket.bind(LOCAL_SOCKET_HOST)
         self.score_updates_socket.settimeout(0)
 
-        self.name_input = InputBox(100, 200, 300, 32)
+        self.name_input = InputBox(WIDTH * .125, HEIGHT * .3 - 60, WIDTH * .75, 50)
         with open(scoreboard_file, 'rb') as f:
             self.scoreboard = pickle.load(f)
+
+        self.scoreboard_rect = pygame.Rect(WIDTH * .125, HEIGHT * .3, WIDTH * .75, HEIGHT * .6)
 
         self.ResetGame()
 
@@ -96,6 +98,11 @@ class FlappyBird():
         self.speed = BASE_SPEED
         self.dead = False
         self.score = 0
+        try:
+            while True:
+                self.score_updates_socket.recv(1514)
+        except:
+            pass
 
     def MoveBird(self):
         # Move the bird for the turn
@@ -157,7 +164,7 @@ class FlappyBird():
 
     def PrintNotification(self, notification):
         # print score counter
-        notification_location = WIDTH / 4, HEIGHT / 8
+        notification_location = WIDTH / 4, HEIGHT * .2
         self.screen.blit(self.notification_font.render(notification,
                                                        -1,
                                                        (255, 255, 255)),
@@ -193,12 +200,15 @@ class FlappyBird():
                     else:
                         if self.score:
                             currentPlayer = self.name_input.handle_event(event)
-                            if currentPlayer:
-                                self.scoreboard.append((self.score, 'Game ' + str(len(self.scoreboard))))
-                                self.scoreboard.sort(key=lambda x: x[0], reverse=True)
-                                with open(scoreboard_file, 'wb') as f:
-                                    pickle.dump(self.scoreboard, f)
-                                print self.scoreboard
+                            if currentPlayer is not None:
+                                if currentPlayer:
+                                    self.scoreboard.append((self.score, currentPlayer))
+                                    self.scoreboard.sort(key=lambda x: x[0], reverse=True)
+                                    if len(self.scoreboard) == 11:
+                                        self.scoreboard.pop()
+                                    with open(scoreboard_file, 'wb') as f:
+                                        pickle.dump(self.scoreboard, f)
+                                    print self.scoreboard
                                 self.ResetGame()
                         else:
                             self.ResetGame()
@@ -208,6 +218,13 @@ class FlappyBird():
                     self.name_input.draw(self.screen)
                 else:
                     self.PrintNotification("Press space to start")
+                pygame.draw.rect(self.screen, (255,255,255), self.scoreboard_rect, 0)
+                pygame.draw.rect(self.screen, (0,0,0), self.scoreboard_rect, 2)
+                location = HEIGHT * .3 + 15
+                for i, (score, name) in enumerate(self.scoreboard):
+                    txt = FONT.render((str(i + 1) + '.').ljust(5) + str(score).ljust(10) + name.ljust(20), True, (0,0,0))
+                    self.screen.blit(txt, (WIDTH * .28, location))
+                    location += 40
                 pygame.display.update()
                 continue
 
