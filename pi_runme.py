@@ -37,6 +37,7 @@ while True:
                 pressed[input_index] = True
                 sock.sendto(str(input_index), (server_ip, 1337))
                 print "Pressed: ", input, count
-            else:
-                pressed[input_index] = False
-        sleep(0.05)
+                count +=1
+        else:
+            pressed[input_index] = False
+    sleep(0.05)
